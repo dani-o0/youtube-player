@@ -32,9 +32,9 @@ function AppTabs() {
 
           if (route.name === 'Favorites') {
             iconName = focused ? 'heart' : 'heart-outline';
-          } else if (route.name === 'VideoLists') {
+          } else if (route.name === 'Lists') {
             iconName = focused ? 'list' : 'list-outline';
-          } else if (route.name === 'AddVideoAndList') {
+          } else if (route.name === 'Add Video & Lists') {
             iconName = focused ? 'add-circle' : 'add-circle-outline';
           } else if (route.name === 'Profile') {
             iconName = focused ? 'person' : 'person-outline';
@@ -54,8 +54,8 @@ function AppTabs() {
       }}
     >
       <Tab.Screen name="Favorites" component={Favorites} />
-      <Tab.Screen name="VideoLists" component={VideoLists} />
-      <Tab.Screen name="AddVideoAndList" component={AddVideoAndList} />
+      <Tab.Screen name="Lists" component={VideoLists} />
+      <Tab.Screen name="Add Video & Lists" component={AddVideoAndList} />
       <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>
   );

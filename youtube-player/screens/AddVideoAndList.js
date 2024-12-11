@@ -27,32 +27,34 @@ export default function AddVideoAndList() {
 
   const handleAddVideo = async () => {
     try {
+      const currentDate = new Date(); // Obtener la fecha y hora actual
       const videoRef = await addDoc(collection(db, "videos"), {
         userId: user.uid,
         title: videoTitle,
         url: videoUrl,
         isFavorite: isFavorite,
         listId: selectedList || null,
+        createdAt: currentDate.toISOString(),
       });
-
+  
       if (selectedList) {
         const listRef = doc(db, "lists", selectedList);
         await updateDoc(listRef, {
-          videos: arrayUnion(videoRef.id)
+          videos: arrayUnion(videoRef.id),
         });
       }
-
+  
       setVideoTitle('');
       setVideoUrl('');
       setSelectedList('');
       setIsFavorite(false);
-
+  
       alert('Video added successfully!');
     } catch (error) {
       console.error("Error adding video: ", error);
       alert('Error adding video. Please try again.');
     }
-  };
+  };  
 
   const handleCreateList = async () => {
     try {

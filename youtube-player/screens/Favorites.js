@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { SafeAreaView, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { Image, SafeAreaView, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { AuthContext } from '../AuthProvider';
@@ -17,18 +17,53 @@ export default function Favorites() {
         const q = query(collection(db, "videos"), where("userId", "==", user.uid), where("isFavorite", "==", true));
         const querySnapshot = await getDocs(q);
         const favoritesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setFavorites(favoritesData);
-      };
+      
+        // Ordenar por fecha en orden descendente
+        const sortedFavorites = favoritesData.sort((a, b) => {
+          const dateA = new Date(a.createdAt);
+          const dateB = new Date(b.createdAt);
+          return dateB - dateA; // Más reciente a menos reciente
+        });
+      
+        setFavorites(sortedFavorites);
+      };      
 
       fetchFavorites();
     }, [user])
   );
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity style={styles.item} onPress={() => setSelectedVideo(item)}>
-      <Text style={styles.title}>{item.title}</Text>
-    </TouchableOpacity>
-  );
+  const renderItem = ({ item }) => {
+    let thumbnailUrl = '';
+
+    if (item.url.includes('youtube.com') || item.url.includes('youtu.be')) {
+      const videoId = item.url.includes('v=')
+        ? item.url.split('v=')[1].split('&')[0]
+        : item.url.split('youtu.be/')[1];
+      thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+    } else if (item.url.includes('instagram.com')) {
+      thumbnailUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/1200px-Instagram_icon.png';
+    }
+
+    const formattedDate = item.createdAt
+    ? new Date(item.createdAt).toLocaleDateString('en-EN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : 'No date';
+
+    return (
+      <TouchableOpacity style={styles.item} onPress={() => setSelectedVideo(item)}>
+        <SafeAreaView style={styles.row}>
+          <Image source={{ uri: thumbnailUrl }} style={styles.thumbnail} />
+          <SafeAreaView>
+            <Text style={styles.videoTitle}>{item.title}</Text>
+            <Text style={styles.videoDate}>{formattedDate}</Text>
+          </SafeAreaView>
+        </SafeAreaView>
+      </TouchableOpacity>
+    );
+  };
 
   if (selectedVideo) {
     return (
@@ -69,6 +104,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: '#3b5998',
   },
+  thumbnail: {
+    width: 120,
+    height: 80,
+    marginRight: 10,
+    borderRadius: 5,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   item: {
     backgroundColor: '#fff',
     padding: 20,
@@ -100,5 +145,13 @@ const styles = StyleSheet.create({
   backButtonText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  videoTitle: {
+    fontSize: 18,
+  },
+  videoDate: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 5,
   },
 });
